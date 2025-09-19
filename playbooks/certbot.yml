@@ -1,0 +1,45 @@
+- name: Set up Certbot
+  hosts: [ 'all' ]
+  become: true
+
+  tasks:
+    - block:
+        - name: Create Certbot User
+          ansible.builtin.user:
+            name: certbot
+            system: true
+            shell: /usr/sbin/nologin
+            create_home: false
+
+        - name: Install dependencies
+          ansible.builtin.package:
+            name: python3-certbot-dns-cloudflare
+            state: present
+
+        - name: Deploy Cloudflare credentials
+          ansible.builtin.copy:
+            dest: /etc/letsencrypt/cloudflare.ini
+            content: |
+              # ANSIBLE MANAGED
+              dns_cloudflare_api_token = {{ certbot_cloudflare_api_token }}
+            owner: certbot
+            group: certbot
+            mode: "0400"
+      when:
+        - service_certbot is defined
+        - service_certbot == true
+
+  roles:
+    - role: geerlingguy.certbot
+      when:
+        - service_certbot is defined
+        - service_certbot == true
+  vars:
+    certbot_hsts: true
+    certbot_admin_email: XXXXXXXXXXXXXXX
+    certbot_create_method: standalone
+    certbot_create_if_missing: true
+    certbot_auto_renew: true
+    certbot_auto_renew_user: certbot
+    certbot_install_method: package
+    certbot_create_command: "/usr/bin/certbot certonly --noninteractive --agree-tos --dns-cloudflare --dns-cloudflare-credentials /etc/letsencrypt/cloudflare.ini -d {{ cert_item.domains | join(',') }} --dns-cloudflare-propagation-seconds 60"
