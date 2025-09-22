@@ -2,7 +2,7 @@
   hosts: [ 'all' ]
   become: true
 
-  tasks:
+  pre_tasks:
     - block:
         - name: Create Certbot User
           ansible.builtin.user:
