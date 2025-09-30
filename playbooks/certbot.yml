@@ -27,13 +27,13 @@
             mode: "0400"
       when:
         - service_certbot is defined
-        - service_certbot == true
+        - service_certbot
 
   roles:
     - role: geerlingguy.certbot
       when:
         - service_certbot is defined
-        - service_certbot == true
+        - service_certbot
   vars:
     certbot_hsts: true
     certbot_admin_email: XXXXXXXXXXXXXXX
